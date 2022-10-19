@@ -1,5 +1,5 @@
 const express = require('express');
-const faker = require('faker');
+const cors = require('cors');
 const {
   logErrors,
   errorHandler,
@@ -7,11 +7,33 @@ const {
 } = require('./middlewares/errorHandler');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const ip = 'http://localhost';
 
 // Para poder recibir datos de tipo json en el body de las peticiones POST
 app.use(express.json());
+
+// Middleware para poder controlar los CORS
+// Generamos una lista de los dominios permitidos para la conexión
+const whiteList = [
+  'http://localhost:8080',
+  'http://localhost:3000',
+  'https://myapp.com',
+  'http://127.0.0.1:5500',
+];
+
+// Pasamos un objeto de opciones a la configuración del los cors
+const options = {
+  origin: (origin, callback) => {
+    if (whiteList.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido'));
+    }
+  },
+};
+// app.use(cors()); // Así permite a cualquier origen
+app.use(cors(options));
 
 // No es necesario indicar el index.js luego de la ruta, ya se sobreentiende
 const routerApi = require('./routes/');
